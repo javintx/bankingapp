@@ -8,19 +8,14 @@ COPY src ./src
 RUN mvn clean package -DskipTests
 
 # Running stage
-FROM amazoncorretto:21-alpine
+FROM gcr.io/distroless/java21-debian12
 
 WORKDIR /app
 COPY --from=build /app/target/*.jar app.jar
 
-RUN addgroup -S appgroup && adduser -S appuser -G appgroup
-RUN chown -R appuser:appgroup /app
-
-USER appuser
-
 EXPOSE 3000
 
-CMD ["java", "-jar", "app.jar"]
+CMD ["app.jar"]
 
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
   CMD curl -f http://localhost:3000/health || exit 1
