@@ -1,7 +1,6 @@
-FROM maven:3-amazoncorretto-21-alpine AS build
+FROM maven:3-amazoncorretto-21-alpine
 
-RUN apk update --no-cache --no-check-certificate && apk add --no-cache curl
-
+RUN apk update --no-cache --no-check-certificate && apk add --no-cache curl ca-certificates
 WORKDIR /app
 
 COPY pom.xml ./
