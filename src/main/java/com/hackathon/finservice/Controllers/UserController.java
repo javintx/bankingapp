@@ -29,24 +29,35 @@ public class UserController {
 
   @PostMapping("/register")
   public ResponseEntity<?> registerUser(@RequestBody RegisterUser registerUser) {
-    if (userRepository.findByEmail(registerUser.email()) != null) {
-      return ResponseEntity.badRequest().body("Email already exists");
-    }
-    userRepository.save(
-        new User(
-            registerUser.name(),
-            registerUser.email(),
-            registerUser.password(),
-            UUID.randomUUID(),
-            "Main",
-            bCryptPasswordEncoder.encode(registerUser.password())
-        )
-    );
-
-    return ResponseEntity.ok(registerUser);
+    return userRepository.findByEmail(registerUser.email())
+        .map(user -> ResponseEntity.badRequest().body("Email already exists"))
+        .orElseGet(() -> {
+          User savedUser = userRepository.save(
+              new User(
+                  registerUser.name(),
+                  registerUser.email(),
+                  registerUser.password(),
+                  UUID.randomUUID(),
+                  "Main",
+                  bCryptPasswordEncoder.encode(registerUser.password())
+              )
+          );
+          return ResponseEntity.ok(new RegisteredUser(
+              savedUser.name(),
+              savedUser.email(),
+              savedUser.accountNumber(),
+              savedUser.accountType(),
+              savedUser.hashedPassword()
+          ).toString());
+        });
   }
 
   public record RegisterUser(@NotEmpty String name, @Email @NotEmpty String email, @NotEmpty String password) {
+
+  }
+
+  public record RegisteredUser(String name, String email, UUID accountNumber, String accountType,
+                               String hashedPassword) {
 
   }
 

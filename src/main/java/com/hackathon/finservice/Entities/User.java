@@ -1,35 +1,33 @@
 package com.hackathon.finservice.Entities;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.Size;
+import jakarta.persistence.Table;
 import java.util.UUID;
 
 @Entity
+@Table(name = "users")
 public record User(
-    @NotEmpty
+    @Column(nullable = false)
     String name,
 
-    @Email
-    @NotEmpty
+    @Column(nullable = false)
     String email,
 
-    @NotEmpty
-    @Size(min = 8)
+    @Column(nullable = false)
     String password,
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     UUID accountNumber,
 
-    @NotEmpty
+    @Column(nullable = false)
     String accountType,
 
-    @NotEmpty
+    @Column(nullable = false)
     String hashedPassword) {
 
 }
