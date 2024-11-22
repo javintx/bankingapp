@@ -1,14 +1,12 @@
 FROM maven:3-amazoncorretto-21-alpine
 
-RUN apk update --no-cache --no-check-certificate && apk add --no-cache curl ca-certificates
 WORKDIR /app
 
 COPY pom.xml ./
 COPY src ./src
+
+ENTRYPOINT ["mvn", "spring-boot:run"]
 EXPOSE 3000
 
-CMD ["mvn", "spring-boot:run"]
-
-HEALTHCHECK --interval=5s --timeout=5s --retries=5 --start-period=15s \
-  CMD curl -f http://127.0.0.1:3000/health || exit 1
-
+HEALTHCHECK --interval=60s --retries=5 --start-period=5s --timeout=10s \
+  CMD wget --no-verbose --tries=1 --spider localhost:3000/health || exit 1
