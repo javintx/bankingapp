@@ -1,21 +1,15 @@
-# Build stage
 FROM maven:3-amazoncorretto-21-alpine AS build
 
+RUN apk update --no-cache --no-check-certificate && apk add --no-cache curl
+
 WORKDIR /app
-COPY pom.xml .
+
+COPY pom.xml ./
 COPY src ./src
-
-RUN mvn clean package -DskipTests
-
-# Running stage
-FROM gcr.io/distroless/java21-debian12
-
-WORKDIR /app
-COPY --from=build /app/target/*.jar app.jar
-
 EXPOSE 3000
 
-CMD ["app.jar"]
+CMD ["mvn", "spring-boot:run"]
 
-HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \
   CMD curl -f http://localhost:3000/health || exit 1
+
