@@ -9,5 +9,6 @@ EXPOSE 3000
 
 CMD ["mvn", "spring-boot:run"]
 
-HEALTHCHECK CMD curl -f http://localhost:3000/health || exit 1
+HEALTHCHECK --interval=5s --timeout=5s --retries=5 --start-period=15s \
+  CMD curl -f http://127.0.0.1:3000/health || exit 1
 
