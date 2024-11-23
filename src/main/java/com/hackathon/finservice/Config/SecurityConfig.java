@@ -41,7 +41,7 @@ public class SecurityConfig {
         .cors(Customizer.withDefaults())
         .authorizeHttpRequests(authorize -> authorize
             .requestMatchers(HttpMethod.GET, "/health").permitAll()
-            .requestMatchers(HttpMethod.POST, "/api/users/register").permitAll()
+            .requestMatchers("/api/users/register").permitAll()
             .anyRequest().authenticated()
         );
     return http.build();
