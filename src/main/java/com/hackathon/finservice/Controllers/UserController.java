@@ -2,6 +2,7 @@ package com.hackathon.finservice.Controllers;
 
 import com.hackathon.finservice.Entities.User;
 import com.hackathon.finservice.Repositories.UserRepository;
+import com.hackathon.finservice.Util.JsonUtil;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotEmpty;
 import java.util.UUID;
@@ -28,8 +29,7 @@ public class UserController {
     this.bCryptPasswordEncoder = bCryptPasswordEncoder;
   }
 
-    @PostMapping(value = "/register", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-//  @PostMapping(value = "/register")
+  @PostMapping(value = "/register", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<?> registerUser(@RequestBody RegisterUser registerUser) {
     return userRepository.findByEmail(registerUser.email())
         .map(user -> ResponseEntity.badRequest().body("Email already exists"))
@@ -44,13 +44,13 @@ public class UserController {
                   bCryptPasswordEncoder.encode(registerUser.password())
               )
           );
-          return ResponseEntity.ok(new RegisteredUser(
+          return ResponseEntity.ok(JsonUtil.toJson(new RegisteredUser(
               savedUser.name(),
               savedUser.email(),
               savedUser.accountNumber(),
               savedUser.accountType(),
               savedUser.hashedPassword()
-          ).toString());
+          )));
         });
   }
 
