@@ -16,7 +16,7 @@ public class SecurityConfig {
   @Bean
   public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
     http.csrf(csrf -> csrf
-        .ignoringRequestMatchers("/api/users/register")
+        .ignoringRequestMatchers("/health", "/api/users/register")
         .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()));
 
     http.headers(headers -> headers
