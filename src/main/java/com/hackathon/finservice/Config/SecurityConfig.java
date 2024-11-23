@@ -15,35 +15,19 @@ public class SecurityConfig {
 
   @Bean
   public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-    http.csrf(csrf -> csrf
-        .ignoringRequestMatchers("/health", "/api/users/register")
-        .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()));
-
-    http.headers(headers -> headers
-        .contentSecurityPolicy(contentSecurityPolicyConfig -> contentSecurityPolicyConfig.policyDirectives(
-            "default-src 'self'; script-src 'self' 'unsafe-inline'; object-src 'none';")));
-
-    http.headers(headers -> headers.frameOptions(FrameOptionsConfig::sameOrigin));
-
-    http.cors(Customizer.withDefaults())
+    return http
+        .csrf(csrf -> csrf.csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()))
+        .headers(headers -> headers
+            .contentSecurityPolicy(contentSecurityPolicyConfig -> contentSecurityPolicyConfig.policyDirectives(
+                "default-src 'self'; script-src 'self'; object-src 'none';"))
+            .frameOptions(FrameOptionsConfig::sameOrigin))
+        .cors(Customizer.withDefaults())
         .authorizeHttpRequests(authorize -> authorize
             .requestMatchers(HttpMethod.GET, "/health").permitAll()
             .requestMatchers(HttpMethod.POST, "/api/users/register").permitAll()
             .anyRequest().authenticated()
-        );
-
-    return http.build();
-
-//    http
-//        .headers(headers -> headers.frameOptions(FrameOptionsConfig::disable))
-//        .csrf(AbstractHttpConfigurer::disable)
-//        .cors(Customizer.withDefaults())
-//        .authorizeHttpRequests(authorize -> authorize
-//            .requestMatchers(HttpMethod.GET, "/health").permitAll()
-//            .requestMatchers("/api/users/register").permitAll()
-//            .anyRequest().authenticated()
-//        );
-//    return http.build();
+        )
+        .build();
   }
 
   @Bean
