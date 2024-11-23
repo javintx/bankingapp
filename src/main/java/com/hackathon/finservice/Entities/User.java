@@ -6,7 +6,6 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
-import java.util.UUID;
 
 @Entity
 @Table(name = "users")
@@ -21,8 +20,8 @@ public record User(
     String password,
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    UUID accountNumber,
+    @GeneratedValue(strategy = GenerationType.UUID)
+    String accountNumber,
 
     @Column(nullable = false)
     String accountType,

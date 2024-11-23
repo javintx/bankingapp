@@ -37,7 +37,7 @@ public class UserController {
                   registerUser.name(),
                   registerUser.email(),
                   registerUser.password(),
-                  UUID.randomUUID(),
+                  UUID.randomUUID().toString(),
                   "Main",
                   bCryptPasswordEncoder.encode(registerUser.password())
               )
@@ -56,7 +56,7 @@ public class UserController {
 
   }
 
-  public record RegisteredUser(String name, String email, UUID accountNumber, String accountType,
+  public record RegisteredUser(String name, String email, String accountNumber, String accountType,
                                String hashedPassword) {
 
   }
