@@ -23,9 +23,10 @@ public class SecurityConfig {
             .frameOptions(FrameOptionsConfig::sameOrigin))
         .cors(Customizer.withDefaults())
         .authorizeHttpRequests(authorize -> authorize
-            .requestMatchers(HttpMethod.GET, "/health").permitAll()
-            .requestMatchers(HttpMethod.POST, "/api/users/register").permitAll()
-            .anyRequest().authenticated()
+            .anyRequest().permitAll()
+//            .requestMatchers(HttpMethod.GET, "/health").permitAll()
+//            .requestMatchers(HttpMethod.POST, "/api/users/register").permitAll()
+//            .anyRequest().authenticated()
         )
         .build();
   }
