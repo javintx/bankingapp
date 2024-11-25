@@ -1,9 +1,8 @@
 package com.hackathon.finservice.Controllers;
 
-import com.hackathon.finservice.Entities.User;
+import com.hackathon.finservice.Services.JwtService;
 import com.hackathon.finservice.Services.UserService;
 import com.hackathon.finservice.Util.JsonUtil;
-import com.hackathon.finservice.Util.JwtUtil;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotEmpty;
@@ -18,20 +17,20 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/users")
+@RequestMapping("api/users")
 public class UserController {
 
   private final UserService userService;
 
   private final BCryptPasswordEncoder bCryptPasswordEncoder;
 
-  private final JwtUtil jwtUtil;
+  private final JwtService jwtService;
 
   @Autowired
-  public UserController(UserService userService, BCryptPasswordEncoder bCryptPasswordEncoder, JwtUtil jwtUtil) {
+  public UserController(UserService userService, BCryptPasswordEncoder bCryptPasswordEncoder, JwtService jwtService) {
     this.userService = userService;
     this.bCryptPasswordEncoder = bCryptPasswordEncoder;
-    this.jwtUtil = jwtUtil;
+    this.jwtService = jwtService;
   }
 
   @PostMapping(value = "/register")
@@ -39,7 +38,7 @@ public class UserController {
     return userService.findByEmail(registerUser.email())
         .map(user -> ResponseEntity.badRequest().body("Email already exists"))
         .orElseGet(() -> {
-          User savedUser = userService.save(
+          var savedUser = userService.save(
               registerUser.name(),
               registerUser.email(),
               registerUser.password()
@@ -59,7 +58,7 @@ public class UserController {
     return userService.findByEmail(loginRequest.identifier())
         .map(user -> {
           if (bCryptPasswordEncoder.matches(loginRequest.password(), user.hashedPassword())) {
-            return ResponseEntity.ok(JsonUtil.toJson(new LoginResponse(jwtUtil.generateToken(user.email()))));
+            return ResponseEntity.ok(JsonUtil.toJson(new LoginResponse(jwtService.generateToken(user.email()))));
           } else {
             return ResponseEntity.status(401).body("Bad credentials");
           }
@@ -70,12 +69,8 @@ public class UserController {
 
   @GetMapping("/logout")
   public ResponseEntity<?> logoutUser(@RequestHeader("Authorization") String token) {
-    invalidateJwtToken(token);
+    jwtService.invalidateToken(token);
     return ResponseEntity.ok("Logged out successfully");
-  }
-
-  private void invalidateJwtToken(String token) {
-    // Implementación para invalidar el token JWT
   }
 
   public record RegisterUser(@NotEmpty String name, @Email @NotEmpty String email, @NotEmpty String password) {

@@ -1,28 +1,31 @@
-package com.hackathon.finservice.Util;
+package com.hackathon.finservice.Services;
 
 import com.hackathon.finservice.Entities.User;
-import com.hackathon.finservice.Services.UserService;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import java.util.Date;
+import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.Function;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
-@Component
-public class JwtUtil {
+@Service
+public class JwtService {
 
   private final UserService userService;
+  private final List<String> invalidatedTokens = new CopyOnWriteArrayList<>();
+
   @Value("${jwt.secret}")
   private String secret;
   @Value("${jwt.expiration}")
   private long expiration;
 
   @Autowired
-  public JwtUtil(UserService userService) {
+  public JwtService(UserService userService) {
     this.userService = userService;
   }
 
@@ -36,8 +39,10 @@ public class JwtUtil {
   }
 
   public Optional<User> getValidUserFromToken(String token) {
-    return userService.findByEmail(extractEmail(token))
-        .filter(user -> user.email().equals(extractEmail(token)) && !isTokenExpired(token));
+    return Optional.ofNullable(token)
+        .filter(notNullToken -> !invalidatedTokens.contains(notNullToken))
+        .flatMap(validToken -> userService.findByEmail(extractEmail(validToken))
+            .filter(user -> user.email().equals(extractEmail(validToken)) && !isTokenExpired(validToken)));
   }
 
   public String extractEmail(String token) {
@@ -45,12 +50,13 @@ public class JwtUtil {
   }
 
   public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
-    final Claims claims = extractAllClaims(token);
-    return claimsResolver.apply(claims);
-  }
-
-  private Claims extractAllClaims(String token) {
-    return Jwts.parser().setSigningKey(secret).parseClaimsJws(token).getBody();
+    return claimsResolver
+        .apply(Jwts
+            .parser()
+            .setSigningKey(secret)
+            .parseClaimsJws(token)
+            .getBody()
+        );
   }
 
   private boolean isTokenExpired(String token) {
@@ -59,5 +65,9 @@ public class JwtUtil {
 
   private Date extractExpiration(String token) {
     return extractClaim(token, Claims::getExpiration);
+  }
+
+  public void invalidateToken(String token) {
+    invalidatedTokens.add(token);
   }
 }
