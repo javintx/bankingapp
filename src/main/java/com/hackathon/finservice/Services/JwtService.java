@@ -53,11 +53,11 @@ public class JwtService {
         );
   }
 
-  public String extractEmail(String token) {
+  private String extractEmail(String token) {
     return extractClaim(token, Claims::getSubject);
   }
 
-  public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
+  private <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
     return claimsResolver
         .apply(Jwts
             .parser()
@@ -76,6 +76,6 @@ public class JwtService {
   }
 
   public void invalidateToken(String token) {
-    invalidatedTokens.add(token);
+    invalidatedTokens.add(token.startsWith(prefix) ? token.substring(prefix.length() + 1) : token);
   }
 }
