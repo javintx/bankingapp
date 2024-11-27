@@ -54,7 +54,7 @@ class UserControllerTest {
         registerUser.email(),
         registerUser.password(),
         hashedPassword,
-        List.of(new Account("19b332", 0.0d, AccountType.MAIN))
+        List.of(new Account("19b332", 0.0d, AccountType.MAIN, 0))
     );
     when(userService.registerUser(registerUser.name(), registerUser.email(), registerUser.password())).thenReturn(
         savedUser);

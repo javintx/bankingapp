@@ -34,7 +34,7 @@ public class UserService {
 
   @Transactional
   public User registerUser(String name, String email, String password) {
-    var savedAccount = accountRepository.save(new Account(UUID.randomUUID().toString(), 0.0d, AccountType.MAIN));
+    var savedAccount = accountRepository.save(new Account(UUID.randomUUID().toString(), 0.0d, AccountType.MAIN, 0));
 
     var user = new User(name, email, password, bCryptPasswordEncoder.encode(password), List.of(savedAccount));
 

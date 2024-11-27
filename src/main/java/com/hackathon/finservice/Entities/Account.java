@@ -28,4 +28,7 @@ public class Account {
   @Enumerated(EnumType.STRING)
   private AccountType accountType;
 
+  @Column(nullable = false)
+  private int creationOrder;
+
 }

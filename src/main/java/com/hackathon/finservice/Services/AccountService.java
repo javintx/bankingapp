@@ -25,7 +25,8 @@ public class AccountService {
     var accountCreated = accountRepository.save(new Account(
         accountNumber,
         0.0d,
-        accountType
+        accountType,
+        user.accounts().size()
     ));
 
     user.accounts().add(accountCreated);
