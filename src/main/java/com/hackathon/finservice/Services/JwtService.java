@@ -25,6 +25,8 @@ public class JwtService {
   private long expiration;
   @Value("${jwt.header}")
   private String header;
+  @Value("${jwt.prefix}")
+  private String prefix;
 
   @Autowired
   public JwtService(UserService userService) {
@@ -32,7 +34,8 @@ public class JwtService {
   }
 
   public String generateToken(String email) {
-    return Jwts.builder()
+    return Jwts
+        .builder()
         .setSubject(email)
         .setIssuedAt(new Date())
         .setExpiration(new Date(System.currentTimeMillis() + expiration))
@@ -41,12 +44,14 @@ public class JwtService {
   }
 
   public Optional<User> getValidUserFromToken(String token) {
-  return Optional.ofNullable(token)
-      .map(rawToken -> rawToken.startsWith(header) ? rawToken.substring(header.length() + 1) : rawToken)
-      .filter(notNullToken -> !invalidatedTokens.contains(notNullToken))
-      .flatMap(validToken -> userService.findByEmail(extractEmail(validToken))
-          .filter(user -> user.email().equals(extractEmail(validToken)) && !isTokenExpired(validToken)));
-}
+    return Optional.ofNullable(token)
+        .map(rawToken -> rawToken.startsWith(prefix) ? rawToken.substring(prefix.length() + 1) : rawToken)
+        .filter(notNullToken -> !invalidatedTokens.contains(notNullToken))
+        .flatMap(validToken -> userService
+            .findByEmail(extractEmail(validToken))
+            .filter(user -> user.email().equals(extractEmail(validToken)) && !isTokenExpired(validToken))
+        );
+  }
 
   public String extractEmail(String token) {
     return extractClaim(token, Claims::getSubject);
