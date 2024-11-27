@@ -1,30 +1,35 @@
 package com.hackathon.finservice.Entities;
 
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
-import jakarta.persistence.Table;
 import java.util.List;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.experimental.Accessors;
 
 @Entity
-@Table(name = "users")
-public record User(
-    @Column(nullable = false)
-    String name,
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Accessors(fluent = true)
+public class User {
 
-    @Id
-    @Column(nullable = false)
-    String email,
+  @Column(nullable = false)
+  private String name;
 
-    @Column(nullable = false)
-    String password,
+  @Id
+  @Column(nullable = false)
+  private String email;
 
-    @Column(nullable = false)
-    String hashedPassword,
+  @Column(nullable = false)
+  private String password;
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    List<Account> accounts) {
+  @Column(nullable = false)
+  private String hashedPassword;
 
+  @OneToMany
+  private List<Account> accounts;
 }

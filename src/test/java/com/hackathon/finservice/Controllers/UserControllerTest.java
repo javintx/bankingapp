@@ -12,8 +12,8 @@ import com.hackathon.finservice.Controllers.UserController.LoginRequest;
 import com.hackathon.finservice.Entities.Account;
 import com.hackathon.finservice.Entities.AccountType;
 import com.hackathon.finservice.Entities.User;
-import com.hackathon.finservice.Services.UserService;
 import com.hackathon.finservice.Services.JwtService;
+import com.hackathon.finservice.Services.UserService;
 import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
@@ -54,17 +54,10 @@ class UserControllerTest {
         registerUser.email(),
         registerUser.password(),
         hashedPassword,
-        emptyList()
+        List.of(new Account("19b332", 0.0d, AccountType.MAIN))
     );
-    Account savedAccount = new Account("19b332", 0.0d, AccountType.MAIN, savedUser);
-    savedUser = new User(
-        savedUser.name(),
-        savedUser.email(),
-        savedUser.password(),
-        savedUser.hashedPassword(),
-        List.of(savedAccount)
-    );
-    when(userService.save(registerUser.name(), registerUser.email(), registerUser.password())).thenReturn(savedUser);
+    when(userService.registerUser(registerUser.name(), registerUser.email(), registerUser.password())).thenReturn(
+        savedUser);
 
     // Act & Assert
     mockMvc.perform(post("/users/register")
@@ -75,7 +68,7 @@ class UserControllerTest {
             "{\"name\":\"Nuwe Test\",\"email\":\"nuwe@nuwe.com\",\"accountNumber\":\"19b332\",\"accountType\":\"Main\",\"hashedPassword\":\"$2a$10$vYWBxACqEIPeoT0O5b0faOHp4ITAHSBvoHDzBePW7tPqzpvqKLi6G\"}"));
 
     verify(userService, times(1)).findByEmail(registerUser.email());
-    verify(userService, times(1)).save(registerUser.name(), registerUser.email(), registerUser.password());
+    verify(userService, times(1)).registerUser(registerUser.name(), registerUser.email(), registerUser.password());
   }
 
   @Test

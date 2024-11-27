@@ -23,6 +23,8 @@ public class JwtService {
   private String secret;
   @Value("${jwt.expiration}")
   private long expiration;
+  @Value("${jwt.header}")
+  private String header;
 
   @Autowired
   public JwtService(UserService userService) {
@@ -39,11 +41,12 @@ public class JwtService {
   }
 
   public Optional<User> getValidUserFromToken(String token) {
-    return Optional.ofNullable(token)
-        .filter(notNullToken -> !invalidatedTokens.contains(notNullToken))
-        .flatMap(validToken -> userService.findByEmail(extractEmail(validToken))
-            .filter(user -> user.email().equals(extractEmail(validToken)) && !isTokenExpired(validToken)));
-  }
+  return Optional.ofNullable(token)
+      .map(rawToken -> rawToken.startsWith(header) ? rawToken.substring(header.length() + 1) : rawToken)
+      .filter(notNullToken -> !invalidatedTokens.contains(notNullToken))
+      .flatMap(validToken -> userService.findByEmail(extractEmail(validToken))
+          .filter(user -> user.email().equals(extractEmail(validToken)) && !isTokenExpired(validToken)));
+}
 
   public String extractEmail(String token) {
     return extractClaim(token, Claims::getSubject);

@@ -2,36 +2,30 @@ package com.hackathon.finservice.Entities;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
-import java.util.UUID;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.experimental.Accessors;
 
 @Entity
-@Table(name = "accounts")
-public record Account(
-    @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    String accountNumber,
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Accessors(fluent = true)
+public class Account {
 
-    @Column(nullable = false)
-    double balance,
+  @Id
+  @Column(nullable = false)
+  private String accountNumber;
 
-    @Column(nullable = false)
-    AccountType accountType,
+  @Column(nullable = false)
+  private double balance;
 
-    @ManyToOne
-    @JoinColumn(name = "user_id", nullable = false)
-    User user) {
+  @Column(nullable = false)
+  @Enumerated(EnumType.STRING)
+  private AccountType accountType;
 
-    public static Account createMainAccount(User user) {
-        return new Account(UUID.randomUUID().toString(), 0.0d, AccountType.MAIN, user);
-    }
-
-    public static Account createInvestAccount(User user) {
-        return new Account(UUID.randomUUID().toString(), 0.0d, AccountType.INVEST, user);
-    }
 }

@@ -38,7 +38,7 @@ public class UserController {
     return userService.findByEmail(registerUser.email())
         .map(user -> ResponseEntity.badRequest().body("Email already exists"))
         .orElseGet(() -> {
-          var savedUser = userService.save(
+          var savedUser = userService.registerUser(
               registerUser.name(),
               registerUser.email(),
               registerUser.password()

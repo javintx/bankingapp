@@ -33,7 +33,7 @@ class DashboardControllerTest {
     var token = "validToken";
     var user = new User("Nuwe Test", "nuwe@nuwe.com", "",
         "$2a$10$VNEntB38mHY.dJ9iDkgrjud2EZ/pWCC9IisqyKqL3cLjEM0L0zSZS", emptyList());
-    var account = new Account("e62fa2", 0.0d, AccountType.MAIN, user);
+    var account = new Account("e62fa2", 0.0d, AccountType.MAIN);
     user = new User(user.name(), user.email(), user.password(), user.hashedPassword(), List.of(account));
     when(jwtService.getValidUserFromToken("Bearer " + token)).thenReturn(Optional.of(user));
 
@@ -60,7 +60,7 @@ class DashboardControllerTest {
     var token = "validToken";
     var user = new User("Nuwe Test", "nuwe@nuwe.com", "",
         "$2a$10$VNEntB38mHY.dJ9iDkgrjud2EZ/pWCC9IisqyKqL3cLjEM0L0zSZS", emptyList());
-    var account = new Account("e62fa2", 0.0d, AccountType.MAIN, user);
+    var account = new Account("e62fa2", 0.0d, AccountType.MAIN);
     user = new User(user.name(), user.email(), user.password(), user.hashedPassword(), List.of(account));
     when(jwtService.getValidUserFromToken("Bearer " + token)).thenReturn(Optional.of(user));
 
@@ -87,7 +87,7 @@ class DashboardControllerTest {
     var token = "validToken";
     var user = new User("Nuwe Test", "nuwe@nuwe.com", "",
         "$2a$10$VNEntB38mHY.dJ9iDkgrjud2EZ/pWCC9IisqyKqL3cLjEM0L0zSZS", emptyList());
-    var account = new Account("e62fa2", 0.0d, AccountType.MAIN, user);
+    var account = new Account("e62fa2", 0.0d, AccountType.MAIN);
     user = new User(user.name(), user.email(), user.password(), user.hashedPassword(), List.of(account));
     when(jwtService.getValidUserFromToken("Bearer " + token)).thenReturn(Optional.of(user));
 

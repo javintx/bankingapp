@@ -1,13 +1,14 @@
 package com.hackathon.finservice.Services;
 
-import static java.util.Collections.emptyList;
-
 import com.hackathon.finservice.Entities.Account;
+import com.hackathon.finservice.Entities.AccountType;
 import com.hackathon.finservice.Entities.User;
+import com.hackathon.finservice.Repositories.AccountRepository;
 import com.hackathon.finservice.Repositories.UserRepository;
 import jakarta.transaction.Transactional;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -16,11 +17,14 @@ import org.springframework.stereotype.Service;
 public class UserService {
 
   private final UserRepository userRepository;
+  private final AccountRepository accountRepository;
   private final BCryptPasswordEncoder bCryptPasswordEncoder;
 
   @Autowired
-  public UserService(UserRepository userRepository, BCryptPasswordEncoder bCryptPasswordEncoder) {
+  public UserService(UserRepository userRepository, AccountRepository accountRepository,
+      BCryptPasswordEncoder bCryptPasswordEncoder) {
     this.userRepository = userRepository;
+    this.accountRepository = accountRepository;
     this.bCryptPasswordEncoder = bCryptPasswordEncoder;
   }
 
@@ -29,23 +33,11 @@ public class UserService {
   }
 
   @Transactional
-  public User save(String name, String email, String password) {
-    User savedUser = userRepository.save(
-        new User(
-            name,
-            email,
-            password,
-            bCryptPasswordEncoder.encode(password),
-            emptyList()
-        )
-    );
-    savedUser = new User(
-        savedUser.name(),
-        savedUser.email(),
-        savedUser.password(),
-        savedUser.hashedPassword(),
-        List.of(Account.createMainAccount(savedUser))
-    );
-    return userRepository.save(savedUser);
+  public User registerUser(String name, String email, String password) {
+    var savedAccount = accountRepository.save(new Account(UUID.randomUUID().toString(), 0.0d, AccountType.MAIN));
+
+    var user = new User(name, email, password, bCryptPasswordEncoder.encode(password), List.of(savedAccount));
+
+    return userRepository.save(user);
   }
 }
