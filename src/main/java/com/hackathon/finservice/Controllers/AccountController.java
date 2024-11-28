@@ -34,7 +34,7 @@ public class AccountController {
           accountService.createAccount(createAccountRequest.accountNumber(), createAccountRequest.accountType(), user);
           return ResponseEntity.ok("New account added successfully for user");
         })
-        .orElseGet(() -> ResponseEntity.status(400).body("Access Denied"));
+        .orElseGet(() -> ResponseEntity.badRequest().body("Access Denied"));
   }
 
   public record CreateAccountRequest(@NotEmpty String accountNumber, @Valid AccountType accountType) {
