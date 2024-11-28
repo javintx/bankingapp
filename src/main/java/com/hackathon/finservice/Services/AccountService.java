@@ -32,4 +32,22 @@ public class AccountService {
     user.accounts().add(accountCreated);
     userRepository.save(user);
   }
+
+  public void deposit(double amount, User user) {
+    var account = user.accounts().getFirst();
+    account.balance(account.balance() + amount);
+    accountRepository.save(account);
+  }
+
+  public void withdraw(double amount, User user) {
+    var account = user.accounts().getFirst();
+    account.balance(account.balance() - amount);
+    accountRepository.save(account);
+  }
+
+  public void fundTransfer(double amount, String targetAccountNumber, User user) {
+    var account = user.accounts().getFirst();
+    account.balance(account.balance() - amount);
+    accountRepository.save(account);
+  }
 }
