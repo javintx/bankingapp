@@ -3,6 +3,7 @@ package com.hackathon.finservice.Controllers;
 import com.hackathon.finservice.Entities.AccountType;
 import com.hackathon.finservice.Services.AccountService;
 import com.hackathon.finservice.Services.JwtService;
+import com.hackathon.finservice.Util.JsonUtil;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Positive;
@@ -45,7 +46,7 @@ public class AccountController {
     return jwtService.getValidUserFromToken(token)
         .map(user -> {
           accountService.deposit(depositRequest.amount(), user);
-          return ResponseEntity.ok("Amount deposited successfully");
+          return ResponseEntity.ok(JsonUtil.toJson(new AccountResponse("Cash deposited successfully")));
         })
         .orElseGet(() -> ResponseEntity.status(401).body("Access Denied"));
   }
@@ -55,8 +56,11 @@ public class AccountController {
       @RequestHeader("Authorization") String token) {
     return jwtService.getValidUserFromToken(token)
         .map(user -> {
-          accountService.withdraw(withdrawRequest.amount(), user);
-          return ResponseEntity.ok("Amount withdrawn successfully");
+          if (accountService.withdraw(withdrawRequest.amount(), user)) {
+            return ResponseEntity.ok(JsonUtil.toJson(new AccountResponse("Cash withdrawn successfully")));
+          } else {
+            return ResponseEntity.ok().body(JsonUtil.toJson(new AccountResponse("Insufficient balance")));
+          }
         })
         .orElseGet(() -> ResponseEntity.status(401).body("Access Denied"));
   }
@@ -66,18 +70,21 @@ public class AccountController {
       @RequestHeader("Authorization") String token) {
     return jwtService.getValidUserFromToken(token)
         .map(user -> {
-          accountService.fundTransfer(fundTransferRequest.amount(), fundTransferRequest.targetAccountNumber(), user);
-          return ResponseEntity.ok("Amount transferred successfully");
+          if (accountService.fundTransfer(fundTransferRequest.amount(), fundTransferRequest.targetAccountNumber(),
+              user)) {
+            return ResponseEntity.ok(JsonUtil.toJson(new AccountResponse("Fund transferred successfully")));
+          } else {
+            return ResponseEntity.ok().body(JsonUtil.toJson(new AccountResponse("Insufficient balance")));
+          }
         })
         .orElseGet(() -> ResponseEntity.status(401).body("Access Denied"));
   }
 
   @GetMapping("/transactions")
   public ResponseEntity<?> getTransactions(@RequestHeader("Authorization") String token) {
-    return ResponseEntity.status(401).body("Access Denied");
-//    return jwtService.getValidUserFromToken(token)
-//        .map(user -> ResponseEntity.ok(user.transactions()))
-//        .orElseGet(() -> ResponseEntity.status(401).body("Access Denied"));
+    return jwtService.getValidUserFromToken(token)
+        .map(user -> ResponseEntity.ok(JsonUtil.toJson(user.accounts().getFirst().transactions())))
+        .orElseGet(() -> ResponseEntity.status(401).body("Access Denied"));
   }
 
   public record CreateAccountRequest(@NotEmpty String accountNumber, @Valid AccountType accountType) {
@@ -85,6 +92,10 @@ public class AccountController {
   }
 
   public record DepositRequest(@Positive double amount) {
+
+  }
+
+  public record AccountResponse(String msg) {
 
   }
 

@@ -4,8 +4,10 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import java.sql.Timestamp;
+import java.time.Instant;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -20,6 +22,7 @@ public class Transaction {
 
   @Id
   @Column(nullable = false)
+  @GeneratedValue(strategy = GenerationType.SEQUENCE)
   private long id;
 
   @Column(nullable = false)
@@ -34,11 +37,24 @@ public class Transaction {
   private TransactionStatus transactionStatus;
 
   @Column(nullable = false)
-  private Timestamp transactionDate;
+  private Instant transactionDate;
 
   @Column(nullable = false)
   private String sourceAccountNumber;
 
   @Column(nullable = false)
   private String targetAccountNumber;
+
+  public Transaction(
+      double amount,
+      TransactionType transactionType,
+      TransactionStatus transactionStatus,
+      String sourceAccountNumber) {
+    this.amount = amount;
+    this.transactionType = transactionType;
+    this.transactionStatus = transactionStatus;
+    this.transactionDate = Instant.now();
+    this.sourceAccountNumber = sourceAccountNumber;
+    this.targetAccountNumber = "N/A";
+  }
 }

@@ -5,6 +5,10 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.OrderBy;
+import java.util.ArrayList;
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -30,5 +34,17 @@ public class Account {
 
   @Column(nullable = false)
   private int creationOrder;
+
+  @OneToMany
+  @OrderBy("id DESC")
+  private List<Transaction> transactions;
+
+  public Account(String accountNumber, double balance, AccountType accountType, int creationOrder) {
+    this.accountNumber = accountNumber;
+    this.balance = balance;
+    this.accountType = accountType;
+    this.creationOrder = creationOrder;
+    this.transactions = new ArrayList<>();
+  }
 
 }

@@ -14,6 +14,7 @@ import com.hackathon.finservice.Entities.AccountType;
 import com.hackathon.finservice.Entities.User;
 import com.hackathon.finservice.Services.JwtService;
 import com.hackathon.finservice.Services.UserService;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
