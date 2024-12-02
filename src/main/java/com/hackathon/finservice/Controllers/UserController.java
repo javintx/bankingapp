@@ -1,8 +1,8 @@
 package com.hackathon.finservice.Controllers;
 
-import com.hackathon.finservice.Services.JwtService;
 import com.hackathon.finservice.Services.UserService;
 import com.hackathon.finservice.Util.JsonUtil;
+import com.hackathon.finservice.Util.JwtUtil;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotEmpty;
@@ -12,7 +12,7 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -28,14 +28,14 @@ public class UserController {
 
   private final UserService userService;
 
-  private final BCryptPasswordEncoder bCryptPasswordEncoder;
+  private final PasswordEncoder passwordEncoder;
 
-  private final JwtService jwtService;
+  private final JwtUtil jwtService;
 
   @Autowired
-  public UserController(UserService userService, BCryptPasswordEncoder bCryptPasswordEncoder, JwtService jwtService) {
+  public UserController(UserService userService, PasswordEncoder passwordEncoder, JwtUtil jwtService) {
     this.userService = userService;
-    this.bCryptPasswordEncoder = bCryptPasswordEncoder;
+    this.passwordEncoder = passwordEncoder;
     this.jwtService = jwtService;
   }
 
@@ -63,7 +63,7 @@ public class UserController {
   public ResponseEntity<?> loginUser(@RequestBody @Valid LoginRequest loginRequest) {
     return userService.findByEmail(loginRequest.identifier())
         .map(user -> {
-          if (bCryptPasswordEncoder.matches(loginRequest.password(), user.hashedPassword())) {
+          if (passwordEncoder.matches(loginRequest.password(), user.hashedPassword())) {
             return ResponseEntity.ok(JsonUtil.toJson(new LoginResponse(jwtService.generateToken(user.email()))));
           } else {
             return ResponseEntity.status(401).body("Bad credentials");
@@ -116,7 +116,7 @@ public class UserController {
 
   }
 
-  public record LoginRequest(String identifier, String password) {
+  public record LoginRequest(@NotEmpty String identifier, @NotEmpty String password) {
 
   }
 
