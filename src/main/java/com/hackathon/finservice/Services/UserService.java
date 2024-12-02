@@ -6,11 +6,12 @@ import com.hackathon.finservice.Entities.User;
 import com.hackathon.finservice.Repositories.AccountRepository;
 import com.hackathon.finservice.Repositories.UserRepository;
 import jakarta.transaction.Transactional;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -18,29 +19,25 @@ public class UserService {
 
   private final UserRepository userRepository;
   private final AccountRepository accountRepository;
-  private final PasswordEncoder passwordEncoder;
+  private final BCryptPasswordEncoder bCryptPasswordEncoder;
 
   @Autowired
   public UserService(UserRepository userRepository, AccountRepository accountRepository,
-      PasswordEncoder passwordEncoder) {
+      BCryptPasswordEncoder bCryptPasswordEncoder) {
     this.userRepository = userRepository;
     this.accountRepository = accountRepository;
-    this.passwordEncoder = passwordEncoder;
+    this.bCryptPasswordEncoder = bCryptPasswordEncoder;
   }
 
   public Optional<User> findByEmail(String email) {
     return userRepository.findByEmail(email);
   }
 
-  public User getUserByEmail(String email) {
-    return userRepository.getUserByEmail(email);
-  }
-
   @Transactional
   public User registerUser(String name, String email, String password) {
     var savedAccount = accountRepository.save(new Account(UUID.randomUUID().toString(), 0.0d, AccountType.MAIN, 0));
 
-    var user = new User(name, email, password, passwordEncoder.encode(password), List.of(savedAccount));
+    var user = new User(name, email, password, bCryptPasswordEncoder.encode(password), List.of(savedAccount));
 
     return userRepository.save(user);
   }

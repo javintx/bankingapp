@@ -9,7 +9,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.hackathon.finservice.Entities.Account;
 import com.hackathon.finservice.Entities.AccountType;
 import com.hackathon.finservice.Entities.User;
-import com.hackathon.finservice.Util.JwtUtil;
+import com.hackathon.finservice.Services.JwtService;
 import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
@@ -26,7 +26,7 @@ class DashboardControllerTest {
   private MockMvc mockMvc;
 
   @MockBean
-  private JwtUtil jwtService;
+  private JwtService jwtService;
 
   @Test
   void getUserInfo_validToken_returnsUserInfo() throws Exception {
