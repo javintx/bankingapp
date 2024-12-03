@@ -1,6 +1,5 @@
 package com.hackathon.finservice.Controllers;
 
-import com.hackathon.finservice.Services.JwtService;
 import com.hackathon.finservice.Services.UserService;
 import com.hackathon.finservice.Util.JsonUtil;
 import java.security.Principal;

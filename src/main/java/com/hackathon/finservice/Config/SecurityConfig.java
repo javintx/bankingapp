@@ -1,5 +1,6 @@
 package com.hackathon.finservice.Config;
 
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -47,6 +48,11 @@ public class SecurityConfig {
             .requestMatchers(HttpMethod.GET, "/health").permitAll()
             .requestMatchers(HttpMethod.POST, "/api/users/**").permitAll()
             .anyRequest().authenticated())
+        .exceptionHandling(exceptionHandling -> exceptionHandling
+            .authenticationEntryPoint((request, response, authException) -> {
+              response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+              response.getWriter().write("Access denied");
+            }))
         .addFilterBefore(jwtAuthorizationFilter, UsernamePasswordAuthenticationFilter.class)
         .build();
   }

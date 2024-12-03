@@ -10,7 +10,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -34,11 +33,19 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
       return;
     }
 
+    if(jwtUtil.isTokenInvalid(accessToken)) {
+      chain.doFilter(request, response);
+      return;
+    }
+
     Claims claims = jwtUtil.resolveClaims(request);
     if (claims != null && jwtUtil.validateClaims(claims)) {
       String email = claims.getSubject();
-      Authentication authentication = new UsernamePasswordAuthenticationToken(email, "", new ArrayList<>());
-      SecurityContextHolder.getContext().setAuthentication(authentication);
+      SecurityContextHolder
+          .getContext()
+          .setAuthentication(
+              new UsernamePasswordAuthenticationToken(email, "", new ArrayList<>())
+          );
     }
 
     chain.doFilter(request, response);

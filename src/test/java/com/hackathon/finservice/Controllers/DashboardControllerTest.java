@@ -1,7 +1,6 @@
 package com.hackathon.finservice.Controllers;
 
 import static java.util.Collections.emptyList;
-import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -9,9 +8,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.hackathon.finservice.Entities.Account;
 import com.hackathon.finservice.Entities.AccountType;
 import com.hackathon.finservice.Entities.User;
-import com.hackathon.finservice.Services.JwtService;
+import com.hackathon.finservice.Util.JwtUtil;
 import java.util.List;
-import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
@@ -26,7 +24,7 @@ class DashboardControllerTest {
   private MockMvc mockMvc;
 
   @MockBean
-  private JwtService jwtService;
+  private JwtUtil jwtUtil;
 
   @Test
   void getUserInfo_validToken_returnsUserInfo() throws Exception {
@@ -35,7 +33,7 @@ class DashboardControllerTest {
         "$2a$10$VNEntB38mHY.dJ9iDkgrjud2EZ/pWCC9IisqyKqL3cLjEM0L0zSZS", emptyList());
     var account = new Account("e62fa2", 0.0d, AccountType.MAIN, 0);
     user = new User(user.name(), user.email(), user.password(), user.hashedPassword(), List.of(account));
-    when(jwtService.getValidUserFromToken("Bearer " + token)).thenReturn(Optional.of(user));
+//    when(jwtUtil.getValidUserFromToken("Bearer " + token)).thenReturn(Optional.of(user));
 
     mockMvc.perform(get("/api/dashboard/user")
             .header("Authorization", "Bearer " + token))
@@ -47,7 +45,7 @@ class DashboardControllerTest {
   @Test
   void getUserInfo_invalidToken_returnsAccessDenied() throws Exception {
     var token = "invalidToken";
-    when(jwtService.getValidUserFromToken("Bearer " + token)).thenReturn(Optional.empty());
+//    when(jwtUtil.getValidUserFromToken("Bearer " + token)).thenReturn(Optional.empty());
 
     mockMvc.perform(get("/api/dashboard/user")
             .header("Authorization", "Bearer " + token))
@@ -62,7 +60,7 @@ class DashboardControllerTest {
         "$2a$10$VNEntB38mHY.dJ9iDkgrjud2EZ/pWCC9IisqyKqL3cLjEM0L0zSZS", emptyList());
     var account = new Account("e62fa2", 0.0d, AccountType.MAIN, 0);
     user = new User(user.name(), user.email(), user.password(), user.hashedPassword(), List.of(account));
-    when(jwtService.getValidUserFromToken("Bearer " + token)).thenReturn(Optional.of(user));
+//    when(jwtUtil.getValidUserFromToken("Bearer " + token)).thenReturn(Optional.of(user));
 
     mockMvc.perform(get("/api/dashboard/account")
             .header("Authorization", "Bearer " + token))
@@ -74,7 +72,7 @@ class DashboardControllerTest {
   @Test
   void getAccountInfo_invalidToken_returnsAccessDenied() throws Exception {
     var token = "invalidToken";
-    when(jwtService.getValidUserFromToken("Bearer " + token)).thenReturn(Optional.empty());
+//    when(jwtUtil.getValidUserFromToken("Bearer " + token)).thenReturn(Optional.empty());
 
     mockMvc.perform(get("/api/dashboard/account")
             .header("Authorization", "Bearer " + token))
@@ -89,7 +87,7 @@ class DashboardControllerTest {
         "$2a$10$VNEntB38mHY.dJ9iDkgrjud2EZ/pWCC9IisqyKqL3cLjEM0L0zSZS", emptyList());
     var account = new Account("e62fa2", 0.0d, AccountType.MAIN, 0);
     user = new User(user.name(), user.email(), user.password(), user.hashedPassword(), List.of(account));
-    when(jwtService.getValidUserFromToken("Bearer " + token)).thenReturn(Optional.of(user));
+//    when(jwtUtil.getValidUserFromToken("Bearer " + token)).thenReturn(Optional.of(user));
 
     mockMvc.perform(get("/api/dashboard/account/0")
             .header("Authorization", "Bearer " + token))
@@ -103,7 +101,7 @@ class DashboardControllerTest {
     var token = "validToken";
     var user = new User("Nuwe Test", "nuwe@nuwe.com", "",
         "$2a$10$VNEntB38mHY.dJ9iDkgrjud2EZ/pWCC9IisqyKqL3cLjEM0L0zSZS", emptyList());
-    when(jwtService.getValidUserFromToken("Bearer " + token)).thenReturn(Optional.of(user));
+//    when(jwtUtil.getValidUserFromToken("Bearer " + token)).thenReturn(Optional.of(user));
 
     mockMvc.perform(get("/api/dashboard/account/1")
             .header("Authorization", "Bearer " + token))
@@ -114,7 +112,7 @@ class DashboardControllerTest {
   @Test
   void getSpecificAccountInfo_invalidToken_returnsAccessDenied() throws Exception {
     var token = "invalidToken";
-    when(jwtService.getValidUserFromToken("Bearer " + token)).thenReturn(Optional.empty());
+//    when(jwtUtil.getValidUserFromToken("Bearer " + token)).thenReturn(Optional.empty());
 
     mockMvc.perform(get("/api/dashboard/account/0")
             .header("Authorization", "Bearer " + token))

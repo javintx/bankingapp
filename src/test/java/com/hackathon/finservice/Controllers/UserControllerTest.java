@@ -12,9 +12,8 @@ import com.hackathon.finservice.Controllers.UserController.LoginRequest;
 import com.hackathon.finservice.Entities.Account;
 import com.hackathon.finservice.Entities.AccountType;
 import com.hackathon.finservice.Entities.User;
-import com.hackathon.finservice.Services.JwtService;
 import com.hackathon.finservice.Services.UserService;
-import java.util.ArrayList;
+import com.hackathon.finservice.Util.JwtUtil;
 import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
@@ -38,7 +37,7 @@ class UserControllerTest {
   private BCryptPasswordEncoder bCryptPasswordEncoder;
 
   @MockBean
-  private JwtService jwtService;
+  private JwtUtil jwtUtil;
 
   @Test
   void testRegisterUser_SuccessfulRegistration() throws Exception {
@@ -80,7 +79,7 @@ class UserControllerTest {
 
     when(userService.findByEmail(loginRequest.identifier())).thenReturn(Optional.of(user));
     when(bCryptPasswordEncoder.matches(loginRequest.password(), user.hashedPassword())).thenReturn(true);
-    when(jwtService.generateToken(user.email())).thenReturn("mocked-jwt-token");
+    when(jwtUtil.generateToken(user.email())).thenReturn("mocked-jwt-token");
 
     mockMvc.perform(post("/users/login")
             .contentType("application/json")
@@ -90,7 +89,7 @@ class UserControllerTest {
 
     verify(userService, times(1)).findByEmail(loginRequest.identifier());
     verify(bCryptPasswordEncoder, times(1)).matches(loginRequest.password(), user.hashedPassword());
-    verify(jwtService, times(1)).generateToken(user.email());
+    verify(jwtUtil, times(1)).generateToken(user.email());
   }
 
   @Test

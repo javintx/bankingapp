@@ -1,8 +1,8 @@
 package com.hackathon.finservice.Controllers;
 
-import com.hackathon.finservice.Services.JwtService;
 import com.hackathon.finservice.Services.UserService;
 import com.hackathon.finservice.Util.JsonUtil;
+import com.hackathon.finservice.Util.JwtUtil;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotEmpty;
@@ -10,7 +10,6 @@ import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -27,13 +26,13 @@ public class UserController {
 
   private final PasswordEncoder passwordEncoder;
 
-  private final JwtService jwtService;
+  private final JwtUtil jwtUtil;
 
   @Autowired
-  public UserController(UserService userService, PasswordEncoder passwordEncoder, JwtService jwtService) {
+  public UserController(UserService userService, PasswordEncoder passwordEncoder, JwtUtil jwtUtil) {
     this.userService = userService;
     this.passwordEncoder = passwordEncoder;
-    this.jwtService = jwtService;
+    this.jwtUtil = jwtUtil;
   }
 
   @PostMapping(value = "/register")
@@ -61,7 +60,7 @@ public class UserController {
     return userService.findByEmail(loginRequest.identifier())
         .map(user -> {
           if (passwordEncoder.matches(loginRequest.password(), user.hashedPassword())) {
-            return ResponseEntity.ok(JsonUtil.toJson(new LoginResponse(jwtService.generateToken(user.email()))));
+            return ResponseEntity.ok(JsonUtil.toJson(new LoginResponse(jwtUtil.generateToken(user.email()))));
           } else {
             return ResponseEntity.status(401).body("Bad credentials");
           }
@@ -72,7 +71,7 @@ public class UserController {
 
   @GetMapping("/logout")
   public ResponseEntity<?> logoutUser(@RequestHeader("Authorization") String token) {
-    jwtService.invalidateToken(token);
+    jwtUtil.invalidateToken(token);
     return ResponseEntity.ok("Logged out successfully");
   }
 

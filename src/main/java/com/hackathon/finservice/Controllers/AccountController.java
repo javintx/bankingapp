@@ -3,13 +3,14 @@ package com.hackathon.finservice.Controllers;
 import com.hackathon.finservice.Entities.AccountType;
 import com.hackathon.finservice.Entities.Transaction;
 import com.hackathon.finservice.Entities.TransactionType;
+import com.hackathon.finservice.Repositories.UserRepository;
 import com.hackathon.finservice.Services.AccountService;
-import com.hackathon.finservice.Services.JwtService;
 import com.hackathon.finservice.Util.JsonUtil;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
+import java.security.Principal;
 import java.time.Instant;
 import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
@@ -22,7 +23,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -30,19 +30,19 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/account")
 public class AccountController {
 
-  private final JwtService jwtService;
   private final AccountService accountService;
+  private final UserRepository userService;
 
   @Autowired
-  public AccountController(JwtService jwtService, AccountService accountService) {
-    this.jwtService = jwtService;
+  public AccountController(AccountService accountService, UserRepository userService) {
     this.accountService = accountService;
+    this.userService = userService;
   }
 
   @PostMapping("/create")
   public ResponseEntity<String> createAccount(@RequestBody @Valid CreateAccountRequest createAccountRequest,
-      @RequestHeader("Authorization") String token) {
-    return jwtService.getValidUserFromToken(token)
+      Principal principal) {
+    return userService.findByEmail(principal.getName())
         .map(user -> {
           accountService.createAccount(createAccountRequest.accountNumber(), createAccountRequest.accountType(), user);
           return ResponseEntity.ok("New account added successfully for user");
@@ -51,9 +51,8 @@ public class AccountController {
   }
 
   @PostMapping("/deposit")
-  public ResponseEntity<String> deposit(@RequestBody @Valid DepositRequest depositRequest,
-      @RequestHeader("Authorization") String token) {
-    return jwtService.getValidUserFromToken(token)
+  public ResponseEntity<String> deposit(@RequestBody @Valid DepositRequest depositRequest, Principal principal) {
+    return userService.findByEmail(principal.getName())
         .map(user -> {
           accountService.deposit(depositRequest.amount(), user);
           return ResponseEntity.ok(JsonUtil.toJson(new AccountResponse("Cash deposited successfully")));
@@ -62,9 +61,8 @@ public class AccountController {
   }
 
   @PostMapping("/withdraw")
-  public ResponseEntity<String> withdraw(@RequestBody @Valid WithdrawRequest withdrawRequest,
-      @RequestHeader("Authorization") String token) {
-    return jwtService.getValidUserFromToken(token)
+  public ResponseEntity<String> withdraw(@RequestBody @Valid WithdrawRequest withdrawRequest, Principal principal) {
+    return userService.findByEmail(principal.getName())
         .map(user -> {
           if (accountService.withdraw(withdrawRequest.amount(), user)) {
             return ResponseEntity.ok(JsonUtil.toJson(new AccountResponse("Cash withdrawn successfully")));
@@ -77,8 +75,8 @@ public class AccountController {
 
   @PostMapping("/fund-transfer")
   public ResponseEntity<String> fundTransfer(@RequestBody @Valid FundTransferRequest fundTransferRequest,
-      @RequestHeader("Authorization") String token) {
-    return jwtService.getValidUserFromToken(token)
+      Principal principal) {
+    return userService.findByEmail(principal.getName())
         .map(user -> {
           if (accountService.fundTransfer(fundTransferRequest.amount(), fundTransferRequest.targetAccountNumber(),
               user)) {
@@ -91,8 +89,8 @@ public class AccountController {
   }
 
   @GetMapping("/transactions")
-  public ResponseEntity<?> getTransactions(@RequestHeader("Authorization") String token) {
-    return jwtService.getValidUserFromToken(token)
+  public ResponseEntity<?> getTransactions(Principal principal) {
+    return userService.findByEmail(principal.getName())
         .map(user -> {
           var transactions = user.accounts().getFirst().transactions().stream()
               .map(TransactionDTO::fromTransaction)

@@ -1,6 +1,5 @@
 package com.hackathon.finservice.Util;
 
-import com.hackathon.finservice.Entities.User;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
@@ -10,7 +9,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.function.Function;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.stereotype.Component;
@@ -39,41 +37,12 @@ public class JwtUtil {
         .compact();
   }
 
-  public Optional<User> getValidUserFromToken(String token) {
-//    return Optional.ofNullable(token)
-//        .map(rawToken -> rawToken.startsWith(prefix) ? rawToken.substring(prefix.length() + 1) : rawToken)
-//        .filter(notNullToken -> !invalidatedTokens.contains(notNullToken))
-//        .flatMap(validToken -> userService
-//            .findByEmail(extractEmail(validToken))
-//            .filter(user -> user.email().equals(extractEmail(validToken)) && !isTokenExpired(validToken))
-//        );
-    return Optional.empty();
-  }
-
-  private String extractEmail(String token) {
-    return extractClaim(token, Claims::getSubject);
-  }
-
-  private <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
-    return claimsResolver
-        .apply(Jwts
-            .parser()
-            .setSigningKey(secret)
-            .parseClaimsJws(token)
-            .getBody()
-        );
-  }
-
-  private boolean isTokenExpired(String token) {
-    return extractExpiration(token).before(new Date());
-  }
-
-  private Date extractExpiration(String token) {
-    return extractClaim(token, Claims::getExpiration);
-  }
-
   public void invalidateToken(String token) {
-    invalidatedTokens.add(token.startsWith(prefix) ? token.substring(prefix.length() + 1) : token);
+    invalidatedTokens.add(token.startsWith(prefix) ? token.substring(prefix.length()).trim() : token);
+  }
+
+  public boolean isTokenInvalid(String token) {
+    return invalidatedTokens.contains(token);
   }
 
   public String resolveToken(HttpServletRequest request) {
