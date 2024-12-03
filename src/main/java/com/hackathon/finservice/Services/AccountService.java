@@ -9,9 +9,11 @@ import com.hackathon.finservice.Entities.User;
 import com.hackathon.finservice.Repositories.AccountRepository;
 import com.hackathon.finservice.Repositories.TransactionRepository;
 import com.hackathon.finservice.Repositories.UserRepository;
+import jakarta.persistence.EntityExistsException;
 import jakarta.transaction.Transactional;
 import java.time.Instant;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -34,56 +36,54 @@ public class AccountService {
     return mainAccount.balance() < amount;
   }
 
+  @Transactional
   public void createAccount(String accountNumber, AccountType accountType, User user) {
-    var accountCreated = accountRepository.save(
-        new Account(
-            accountNumber,
-            0.0d,
-            accountType,
-            user.accounts().size()
-        )
-    );
-
-    user.accounts().add(accountCreated);
-    userRepository.save(user);
+    try {
+      var account = accountRepository.save(
+          new Account(
+              accountNumber,
+              0.0d,
+              accountType,
+              user.accounts().size()
+          )
+      );
+      user.accounts().add(account);
+      userRepository.save(user);
+    } catch (DataIntegrityViolationException ex) {
+      throw new EntityExistsException("Duplicate account number");
+    }
   }
 
   @Transactional
   public void deposit(double amount, User user) {
     var mainAccount = user.accounts().getFirst();
 
-    var transaction = new Transaction(
-        amount,
-        TransactionType.CASH_DEPOSIT,
-        TransactionStatus.PENDING,
-        mainAccount.accountNumber()
+    var transaction = transactionRepository.save(
+        new Transaction(
+            amount,
+            TransactionType.CASH_DEPOSIT,
+            TransactionStatus.PENDING,
+            mainAccount.accountNumber()
+        )
     );
-    transaction = transactionRepository.save(transaction);
+
     mainAccount.transactions().add(transaction);
     mainAccount.balance(mainAccount.balance() + applyDepositFee(amount));
     accountRepository.save(mainAccount);
-//    mainAccount.transactions().add(
-//        new Transaction(
-//            amount,
-//            TransactionType.CASH_DEPOSIT,
-//            TransactionStatus.PENDING,
-//            mainAccount.accountNumber()
-//        )
-//    );
-//    accountRepository.save(mainAccount);
   }
 
   private double applyDepositFee(double amount) {
     return amount > 50_000 ? amount * 0.98 : amount;
   }
 
+  @Transactional
   public boolean withdraw(double amount, User user) {
     var mainAccount = user.accounts().getFirst();
     if (!enoughFunds(amount, mainAccount)) {
       return false;
     }
-    mainAccount.balance(mainAccount.balance() - applyWithdrawFee(amount));
-    mainAccount.transactions().add(
+
+    var transaction = transactionRepository.save(
         new Transaction(
             amount,
             TransactionType.CASH_WITHDRAWAL,
@@ -91,7 +91,11 @@ public class AccountService {
             mainAccount.accountNumber()
         )
     );
+
+    mainAccount.balance(mainAccount.balance() - applyWithdrawFee(amount));
+    mainAccount.transactions().add(transaction);
     accountRepository.save(mainAccount);
+
     return true;
   }
 
@@ -99,13 +103,14 @@ public class AccountService {
     return amount > 10_000 ? amount * 1.01 : amount;
   }
 
+  @Transactional
   public boolean fundTransfer(double amount, String targetAccountNumber, User user) {
     var mainAccount = user.accounts().getFirst();
     if (!enoughFunds(amount, mainAccount)) {
       return false;
     }
     if (isFraudulentAmount(amount)) {
-      mainAccount.transactions().add(
+      var transaction = transactionRepository.save(
           new Transaction(
               amount,
               TransactionType.CASH_TRANSFER,
@@ -113,8 +118,10 @@ public class AccountService {
               targetAccountNumber
           )
       );
+
+      mainAccount.transactions().add(transaction);
     } else if (isFrequentTransfers(mainAccount, targetAccountNumber)) {
-      mainAccount.transactions().add(
+      var transaction = transactionRepository.save(
           new Transaction(
               amount,
               TransactionType.CASH_TRANSFER,
@@ -122,9 +129,10 @@ public class AccountService {
               targetAccountNumber
           )
       );
+      mainAccount.transactions().add(transaction);
       markTransactionsAsFraud(mainAccount, targetAccountNumber);
     } else {
-      mainAccount.transactions().add(
+      var transaction = transactionRepository.save(
           new Transaction(
               amount,
               TransactionType.CASH_TRANSFER,
@@ -132,6 +140,7 @@ public class AccountService {
               targetAccountNumber
           )
       );
+      mainAccount.transactions().add(transaction);
       mainAccount.balance(mainAccount.balance() - amount);
     }
     accountRepository.save(mainAccount);

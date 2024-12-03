@@ -13,11 +13,6 @@ public enum AccountType {
     this.type = type;
   }
 
-  @JsonValue
-  public String type() {
-    return type;
-  }
-
   @JsonCreator
   public static AccountType forType(String value) {
     for (AccountType accountType : AccountType.values()) {
@@ -25,6 +20,11 @@ public enum AccountType {
         return accountType;
       }
     }
-    throw new IllegalArgumentException("Invalid AccountType: " + value);
+    throw new IllegalArgumentException("Invalid account type: " + value);
+  }
+
+  @JsonValue
+  public String type() {
+    return type;
   }
 }

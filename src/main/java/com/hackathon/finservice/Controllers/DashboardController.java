@@ -2,7 +2,6 @@ package com.hackathon.finservice.Controllers;
 
 import com.hackathon.finservice.Services.JwtService;
 import com.hackathon.finservice.Util.JsonUtil;
-import jakarta.validation.constraints.NotEmpty;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -23,7 +22,10 @@ public class DashboardController {
   }
 
   @GetMapping("/user")
-  public ResponseEntity<?> getUserInfo(@RequestHeader("Authorization") @NotEmpty String token) {
+  public ResponseEntity<?> getUserInfo(
+      @RequestHeader("Authorization")
+      String token
+  ) {
     return jwtService.getValidUserFromToken(token)
         .map(user -> ResponseEntity.ok(
                 JsonUtil.toJson(
@@ -40,7 +42,9 @@ public class DashboardController {
   }
 
   @GetMapping("/account")
-  public ResponseEntity<?> getAccountInfo(@RequestHeader("Authorization") @NotEmpty String token) {
+  public ResponseEntity<?> getAccountInfo(
+      @RequestHeader("Authorization")
+      String token) {
     return jwtService.getValidUserFromToken(token)
         .map(user -> ResponseEntity.ok(
                 JsonUtil.toJson(
@@ -55,8 +59,12 @@ public class DashboardController {
   }
 
   @GetMapping("/account/{index}")
-  public ResponseEntity<?> getSpecificAccountInfo(@PathVariable int index,
-      @RequestHeader("Authorization") @NotEmpty String token) {
+  public ResponseEntity<?> getSpecificAccountInfo(
+      @PathVariable int index,
+
+      @RequestHeader("Authorization")
+      String token
+  ) {
     return jwtService.getValidUserFromToken(token)
         .map(user -> {
           if (index < 0 || index >= user.accounts().size()) {

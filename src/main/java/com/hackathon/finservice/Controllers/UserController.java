@@ -8,13 +8,9 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
-import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.web.bind.MethodArgumentNotValidException;
-import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -79,48 +75,49 @@ public class UserController {
     return ResponseEntity.ok("Logged out successfully");
   }
 
-  @ExceptionHandler(MethodArgumentNotValidException.class)
-  public ResponseEntity<String> handleBadRequestExceptions(MethodArgumentNotValidException ex) {
-    return ResponseEntity
-        .badRequest()
-        .body(
-            ex.getBindingResult()
-                .getAllErrors()
-                .stream()
-                .map(DefaultMessageSourceResolvable::getDefaultMessage)
-                .collect(Collectors.joining("; "))
-        );
-  }
-
   public record RegisterUser(
-      @NotEmpty
+      @NotEmpty(message = "Name must not be empty")
       String name,
 
       @Email(message = "Invalid email: ${validatedValue}")
-      @NotEmpty
+      @NotEmpty(message = "Email must not be empty")
       String email,
 
-      @NotEmpty
+      @NotEmpty(message = "Password must not be empty")
       @Pattern(regexp = ".*[A-Z].*", message = "Password must contain at least one uppercase letter")
       @Pattern(regexp = ".*\\d.*", message = "Password must contain at least one digit")
       @Pattern(regexp = ".*[!@#$%^&*()].*", message = "Password must contain at least one special character")
       @Pattern(regexp = "^\\S*$", message = "Password cannot contain whitespace")
       @Size(min = 8, message = "Password must be at least 8 characters long")
       @Size(max = 128, message = "Password must be less than 128 characters long")
-      String password) {
+      String password
+  ) {
 
   }
 
-  public record RegisteredUser(String name, String email, String accountNumber, String accountType,
-                               String hashedPassword) {
+  public record RegisteredUser(
+      String name,
+      String email,
+      String accountNumber,
+      String accountType,
+      String hashedPassword
+  ) {
 
   }
 
-  public record LoginRequest(@NotEmpty String identifier, @NotEmpty String password) {
+  public record LoginRequest(
+      @NotEmpty(message = "Identifier must not be empty")
+      String identifier,
+
+      @NotEmpty(message = "Password must not be empty")
+      String password
+  ) {
 
   }
 
-  public record LoginResponse(String token) {
+  public record LoginResponse(
+      String token
+  ) {
 
   }
 

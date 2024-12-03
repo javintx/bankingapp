@@ -6,6 +6,7 @@ import com.hackathon.finservice.Services.JwtService;
 import com.hackathon.finservice.Util.JsonUtil;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -87,11 +88,20 @@ public class AccountController {
         .orElseGet(() -> ResponseEntity.status(401).body("Access Denied"));
   }
 
-  public record CreateAccountRequest(@NotEmpty String accountNumber, @Valid AccountType accountType) {
+  public record CreateAccountRequest(
+      @NotEmpty(message = "Account number must not be empty")
+      String accountNumber,
+
+      @NotNull(message = "Account type must not be empty")
+      AccountType accountType
+  ) {
 
   }
 
-  public record DepositRequest(@Positive double amount) {
+  public record DepositRequest(
+      @Positive(message = "Amount must be greater than 0")
+      double amount
+  ) {
 
   }
 
@@ -99,11 +109,20 @@ public class AccountController {
 
   }
 
-  public record WithdrawRequest(@Positive double amount) {
+  public record WithdrawRequest(
+      @Positive(message = "Amount must be greater than 0")
+      double amount
+  ) {
 
   }
 
-  public record FundTransferRequest(@Positive double amount, @NotEmpty String targetAccountNumber) {
+  public record FundTransferRequest(
+      @Positive(message = "Amount must be greater than 0")
+      double amount,
+
+      @NotEmpty(message = "Target account number must not be empty")
+      String targetAccountNumber
+  ) {
 
   }
 }
