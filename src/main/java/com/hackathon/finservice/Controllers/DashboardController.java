@@ -39,7 +39,7 @@ public class DashboardController {
                     )
                 )
             )
-        ).orElseGet(() -> ResponseEntity.noContent().build());
+        ).orElseGet(() -> ResponseEntity.status(401).body("Bad credentials"));
   }
 
   @GetMapping("/account")
