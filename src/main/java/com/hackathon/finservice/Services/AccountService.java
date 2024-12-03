@@ -7,7 +7,9 @@ import com.hackathon.finservice.Entities.TransactionStatus;
 import com.hackathon.finservice.Entities.TransactionType;
 import com.hackathon.finservice.Entities.User;
 import com.hackathon.finservice.Repositories.AccountRepository;
+import com.hackathon.finservice.Repositories.TransactionRepository;
 import com.hackathon.finservice.Repositories.UserRepository;
+import jakarta.transaction.Transactional;
 import java.time.Instant;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -17,12 +19,19 @@ public class AccountService {
 
   private final AccountRepository accountRepository;
   private final UserRepository userRepository;
+  private final TransactionRepository transactionRepository;
 
 
   @Autowired
-  public AccountService(AccountRepository accountRepository, UserRepository userRepository) {
+  public AccountService(AccountRepository accountRepository, UserRepository userRepository,
+      TransactionRepository transactionRepository) {
     this.accountRepository = accountRepository;
     this.userRepository = userRepository;
+    this.transactionRepository = transactionRepository;
+  }
+
+  private static boolean enoughFunds(double amount, Account mainAccount) {
+    return mainAccount.balance() < amount;
   }
 
   public void createAccount(String accountNumber, AccountType accountType, User user) {
@@ -39,18 +48,29 @@ public class AccountService {
     userRepository.save(user);
   }
 
+  @Transactional
   public void deposit(double amount, User user) {
     var mainAccount = user.accounts().getFirst();
-    mainAccount.balance(mainAccount.balance() + applyDepositFee(amount));
-    mainAccount.transactions().add(
-        new Transaction(
-            amount,
-            TransactionType.CASH_DEPOSIT,
-            TransactionStatus.PENDING,
-            mainAccount.accountNumber()
-        )
+
+    var transaction = new Transaction(
+        amount,
+        TransactionType.CASH_DEPOSIT,
+        TransactionStatus.PENDING,
+        mainAccount.accountNumber()
     );
+    transaction = transactionRepository.save(transaction);
+    mainAccount.transactions().add(transaction);
+    mainAccount.balance(mainAccount.balance() + applyDepositFee(amount));
     accountRepository.save(mainAccount);
+//    mainAccount.transactions().add(
+//        new Transaction(
+//            amount,
+//            TransactionType.CASH_DEPOSIT,
+//            TransactionStatus.PENDING,
+//            mainAccount.accountNumber()
+//        )
+//    );
+//    accountRepository.save(mainAccount);
   }
 
   private double applyDepositFee(double amount) {
@@ -73,10 +93,6 @@ public class AccountService {
     );
     accountRepository.save(mainAccount);
     return true;
-  }
-
-  private static boolean enoughFunds(double amount, Account mainAccount) {
-    return mainAccount.balance() < amount;
   }
 
   private double applyWithdrawFee(double amount) {

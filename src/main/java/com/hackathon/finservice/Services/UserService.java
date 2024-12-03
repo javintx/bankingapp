@@ -6,7 +6,6 @@ import com.hackathon.finservice.Entities.User;
 import com.hackathon.finservice.Repositories.AccountRepository;
 import com.hackathon.finservice.Repositories.UserRepository;
 import jakarta.transaction.Transactional;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
