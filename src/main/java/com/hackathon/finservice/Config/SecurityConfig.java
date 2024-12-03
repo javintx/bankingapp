@@ -41,7 +41,7 @@ public class SecurityConfig {
         .authorizeHttpRequests(authorize -> authorize
             .requestMatchers(HttpMethod.GET, "/health").permitAll()
             .requestMatchers(HttpMethod.POST, "/api/users/**").permitAll()
-            .anyRequest().permitAll())
+            .anyRequest().authenticated())
         .build();
   }
 
