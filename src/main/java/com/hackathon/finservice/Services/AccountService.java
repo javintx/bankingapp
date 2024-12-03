@@ -14,6 +14,7 @@ import jakarta.transaction.Transactional;
 import java.time.Instant;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -51,6 +52,24 @@ public class AccountService {
       userRepository.save(user);
     } catch (DataIntegrityViolationException ex) {
       throw new EntityExistsException("Duplicate account number");
+    }
+  }
+
+  @Scheduled(fixedRate = 10000)
+  public void applyInterestToInvestAccounts() {
+    accountRepository
+        .findAllByAccountType(AccountType.INVEST)
+        .forEach(this::applyInterest);
+  }
+
+  @Transactional
+  public void applyInterest(Account account) {
+    if (account.accountType() == AccountType.INVEST
+        && account.balance() > 0) {
+      double interest = account.balance() * 0.10;
+      account.balance(account.balance() + interest);
+      accountRepository.save(account);
+      System.out.println("Applied interest to account " + account.accountNumber() + ": " + interest);
     }
   }
 
