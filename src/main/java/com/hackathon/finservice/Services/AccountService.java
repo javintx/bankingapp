@@ -32,7 +32,7 @@ public class AccountService {
     this.transactionRepository = transactionRepository;
   }
 
-  private static boolean enoughFunds(double amount, Account mainAccount) {
+  private static boolean insufficientFunds(double amount, Account mainAccount) {
     return mainAccount.balance() < amount;
   }
 
@@ -79,7 +79,8 @@ public class AccountService {
   @Transactional
   public boolean withdraw(double amount, User user) {
     var mainAccount = user.accounts().getFirst();
-    if (!enoughFunds(amount, mainAccount)) {
+
+    if (insufficientFunds(amount, mainAccount)) {
       return false;
     }
 
@@ -106,9 +107,11 @@ public class AccountService {
   @Transactional
   public boolean fundTransfer(double amount, String targetAccountNumber, User user) {
     var mainAccount = user.accounts().getFirst();
-    if (!enoughFunds(amount, mainAccount)) {
+
+    if (insufficientFunds(amount, mainAccount)) {
       return false;
     }
+
     if (isFraudulentAmount(amount)) {
       var transaction = transactionRepository.save(
           new Transaction(
@@ -118,7 +121,6 @@ public class AccountService {
               targetAccountNumber
           )
       );
-
       mainAccount.transactions().add(transaction);
     } else if (isFrequentTransfers(mainAccount, targetAccountNumber)) {
       var transaction = transactionRepository.save(
@@ -143,6 +145,7 @@ public class AccountService {
       mainAccount.transactions().add(transaction);
       mainAccount.balance(mainAccount.balance() - amount);
     }
+
     accountRepository.save(mainAccount);
     return true;
   }

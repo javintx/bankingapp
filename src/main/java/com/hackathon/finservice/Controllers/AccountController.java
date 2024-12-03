@@ -1,6 +1,8 @@
 package com.hackathon.finservice.Controllers;
 
 import com.hackathon.finservice.Entities.AccountType;
+import com.hackathon.finservice.Entities.Transaction;
+import com.hackathon.finservice.Entities.TransactionType;
 import com.hackathon.finservice.Services.AccountService;
 import com.hackathon.finservice.Services.JwtService;
 import com.hackathon.finservice.Util.JsonUtil;
@@ -8,6 +10,13 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
+import java.time.Instant;
+import java.util.stream.Collectors;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -84,7 +93,12 @@ public class AccountController {
   @GetMapping("/transactions")
   public ResponseEntity<?> getTransactions(@RequestHeader("Authorization") String token) {
     return jwtService.getValidUserFromToken(token)
-        .map(user -> ResponseEntity.ok(JsonUtil.toJson(user.accounts().getFirst().transactions())))
+        .map(user -> {
+          var transactions = user.accounts().getFirst().transactions().stream()
+              .map(TransactionDTO::fromTransaction)
+              .collect(Collectors.toList());
+          return ResponseEntity.ok(JsonUtil.toJson(transactions));
+        })
         .orElseGet(() -> ResponseEntity.status(401).body("Access Denied"));
   }
 
@@ -124,5 +138,31 @@ public class AccountController {
       String targetAccountNumber
   ) {
 
+  }
+
+  @Data
+  @NoArgsConstructor
+  @AllArgsConstructor
+  @Getter
+  @Setter
+  public static class TransactionDTO {
+
+    private long id;
+    private double amount;
+    private TransactionType type;
+    private Instant date;
+    private String sourceAccountNumber;
+    private String targetAccountNumber;
+
+    static TransactionDTO fromTransaction(Transaction transaction) {
+      return new TransactionDTO(
+          transaction.id(),
+          transaction.amount(),
+          transaction.transactionType(),
+          transaction.transactionDate(),
+          transaction.sourceAccountNumber(),
+          transaction.targetAccountNumber()
+      );
+    }
   }
 }
