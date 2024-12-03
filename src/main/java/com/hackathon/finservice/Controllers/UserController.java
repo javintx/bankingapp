@@ -11,6 +11,7 @@ import jakarta.validation.constraints.Size;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -24,14 +25,14 @@ public class UserController {
 
   private final UserService userService;
 
-  private final BCryptPasswordEncoder bCryptPasswordEncoder;
+  private final PasswordEncoder passwordEncoder;
 
   private final JwtService jwtService;
 
   @Autowired
-  public UserController(UserService userService, BCryptPasswordEncoder bCryptPasswordEncoder, JwtService jwtService) {
+  public UserController(UserService userService, PasswordEncoder passwordEncoder, JwtService jwtService) {
     this.userService = userService;
-    this.bCryptPasswordEncoder = bCryptPasswordEncoder;
+    this.passwordEncoder = passwordEncoder;
     this.jwtService = jwtService;
   }
 
@@ -59,7 +60,7 @@ public class UserController {
   public ResponseEntity<?> loginUser(@RequestBody @Valid LoginRequest loginRequest) {
     return userService.findByEmail(loginRequest.identifier())
         .map(user -> {
-          if (bCryptPasswordEncoder.matches(loginRequest.password(), user.hashedPassword())) {
+          if (passwordEncoder.matches(loginRequest.password(), user.hashedPassword())) {
             return ResponseEntity.ok(JsonUtil.toJson(new LoginResponse(jwtService.generateToken(user.email()))));
           } else {
             return ResponseEntity.status(401).body("Bad credentials");

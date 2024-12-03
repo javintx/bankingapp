@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -18,14 +18,14 @@ public class UserService {
 
   private final UserRepository userRepository;
   private final AccountRepository accountRepository;
-  private final BCryptPasswordEncoder bCryptPasswordEncoder;
+  private final PasswordEncoder passwordEncoder;
 
   @Autowired
   public UserService(UserRepository userRepository, AccountRepository accountRepository,
-      BCryptPasswordEncoder bCryptPasswordEncoder) {
+      PasswordEncoder passwordEncoder) {
     this.userRepository = userRepository;
     this.accountRepository = accountRepository;
-    this.bCryptPasswordEncoder = bCryptPasswordEncoder;
+    this.passwordEncoder = passwordEncoder;
   }
 
   public Optional<User> findByEmail(String email) {
@@ -36,7 +36,7 @@ public class UserService {
   public User registerUser(String name, String email, String password) {
     var savedAccount = accountRepository.save(new Account(UUID.randomUUID().toString(), 0.0d, AccountType.MAIN, 0));
 
-    var user = new User(name, email, password, bCryptPasswordEncoder.encode(password), List.of(savedAccount));
+    var user = new User(name, email, password, passwordEncoder.encode(password), List.of(savedAccount));
 
     return userRepository.save(user);
   }
