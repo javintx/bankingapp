@@ -13,15 +13,18 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
 public class SecurityConfig {
 
   private final CustomUserDetailsService userDetailsService;
+  private final JwtAuthorizationFilter jwtAuthorizationFilter;
 
   @Autowired
-  public SecurityConfig(CustomUserDetailsService userDetailsService) {
+  public SecurityConfig(CustomUserDetailsService userDetailsService, JwtAuthorizationFilter jwtAuthorizationFilter) {
     this.userDetailsService = userDetailsService;
+    this.jwtAuthorizationFilter = jwtAuthorizationFilter;
   }
 
   @Bean
@@ -42,6 +45,7 @@ public class SecurityConfig {
             .requestMatchers(HttpMethod.GET, "/health").permitAll()
             .requestMatchers(HttpMethod.POST, "/api/users/**").permitAll()
             .anyRequest().authenticated())
+        .addFilterBefore(jwtAuthorizationFilter, UsernamePasswordAuthenticationFilter.class)
         .build();
   }
 
