@@ -57,23 +57,6 @@ public class SecurityConfig {
         .build();
   }
 
-//  @Bean
-//  public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-//    return http
-//        .csrf(csrf -> csrf.csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()))
-//        .headers(headers -> headers
-//            .contentSecurityPolicy(contentSecurityPolicyConfig -> contentSecurityPolicyConfig.policyDirectives(
-//                "default-src 'self'; script-src 'self'; object-src 'none';"))
-//            .frameOptions(FrameOptionsConfig::sameOrigin))
-//        .cors(Customizer.withDefaults())
-//        .authorizeHttpRequests(authorize -> authorize
-//            .anyRequest().permitAll()
-
-  /// /            .requestMatchers(HttpMethod.GET, "/health").permitAll() / .requestMatchers(HttpMethod.POST,
-  /// "/api/users/register").permitAll() /            .anyRequest().authenticated()
-//        )
-//        .build();
-//  }
   @Bean
   public PasswordEncoder passwordEncoder() {
     return new BCryptPasswordEncoder(12);

@@ -4,6 +4,7 @@ import static java.util.Collections.emptyList;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -60,7 +61,7 @@ class UserControllerTest {
         savedUser);
 
     // Act & Assert
-    mockMvc.perform(post("/users/register")
+    mockMvc.perform(post("/api/users/register")
             .contentType("application/json")
             .content("{\"name\":\"Nuwe Test\",\"email\":\"nuwe@nuwe.com\",\"password\":\"NuweTest1$\"}"))
         .andExpect(status().isOk())
@@ -81,7 +82,7 @@ class UserControllerTest {
     when(bCryptPasswordEncoder.matches(loginRequest.password(), user.hashedPassword())).thenReturn(true);
     when(jwtUtil.generateToken(user.email())).thenReturn("mocked-jwt-token");
 
-    mockMvc.perform(post("/users/login")
+    mockMvc.perform(post("/api/users/login")
             .contentType("application/json")
             .content("{\"identifier\":\"nuwe@nuwe.com\",\"password\":\"NuweTest1$\"}"))
         .andExpect(status().isOk())
@@ -101,7 +102,7 @@ class UserControllerTest {
     when(userService.findByEmail(loginRequest.identifier())).thenReturn(Optional.of(user));
     when(bCryptPasswordEncoder.matches(loginRequest.password(), user.hashedPassword())).thenReturn(false);
 
-    mockMvc.perform(post("/users/login")
+    mockMvc.perform(post("/api/users/login")
             .contentType("application/json")
             .content("{\"identifier\":\"nuwe@nuwe.com\",\"password\":\"wrongPassword\"}"))
         .andExpect(status().isUnauthorized())
@@ -117,12 +118,24 @@ class UserControllerTest {
 
     when(userService.findByEmail(loginRequest.identifier())).thenReturn(Optional.empty());
 
-    mockMvc.perform(post("/users/login")
+    mockMvc.perform(post("/api/users/login")
             .contentType("application/json")
             .content("{\"identifier\":\"unknown@nuwe.com\",\"password\":\"NuweTest1$\"}"))
         .andExpect(status().isBadRequest())
         .andExpect(content().string("User not found for the given identifier: unknown@nuwe.com"));
 
     verify(userService, times(1)).findByEmail(loginRequest.identifier());
+  }
+
+  @Test
+  void logoutUser_SuccessfulLogout() throws Exception {
+    String token = "Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJudXdlQG51d2U1LmNvbSIsImlhdCI6MTczMzIzNTA2NiwiZXhwIjoxNzMzMzIxNDY2fQ.4IL1gWeZt-xVEI9ldV_kVW6mToXHBPEz9NlOmTVMMCkBVt1y1F4Xj_fSEPIv0_9gJMTzxdDj-kF4g4VkKXcDyQ";
+
+    mockMvc.perform(get("/api/users/logout")
+            .header("Authorization", token))
+        .andExpect(status().isOk())
+        .andExpect(content().string("Logged out successfully"));
+
+    verify(jwtUtil, times(1)).invalidateToken(token);
   }
 }
