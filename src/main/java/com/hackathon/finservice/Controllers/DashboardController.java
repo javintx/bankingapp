@@ -1,7 +1,9 @@
 package com.hackathon.finservice.Controllers;
 
 import com.hackathon.finservice.Services.JwtService;
+import com.hackathon.finservice.Services.UserService;
 import com.hackathon.finservice.Util.JsonUtil;
+import java.security.Principal;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -14,19 +16,18 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/dashboard")
 public class DashboardController {
 
+  private final UserService userService;
   private final JwtService jwtService;
 
   @Autowired
-  public DashboardController(JwtService jwtService) {
+  public DashboardController(UserService userService, JwtService jwtService) {
+    this.userService = userService;
     this.jwtService = jwtService;
   }
 
   @GetMapping("/user")
-  public ResponseEntity<?> getUserInfo(
-      @RequestHeader("Authorization")
-      String token
-  ) {
-    return jwtService.getValidUserFromToken(token)
+  public ResponseEntity<?> getUserInfo(Principal principal) {
+    return userService.findByEmail(principal.getName())
         .map(user -> ResponseEntity.ok(
                 JsonUtil.toJson(
                     new UserInfo(
@@ -38,7 +39,7 @@ public class DashboardController {
                     )
                 )
             )
-        ).orElseGet(() -> ResponseEntity.status(401).body("Access Denied"));
+        ).orElseGet(() -> ResponseEntity.noContent().build());
   }
 
   @GetMapping("/account")
