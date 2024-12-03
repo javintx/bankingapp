@@ -116,7 +116,7 @@ public class UserController {
 
   }
 
-  public record LoginRequest(String identifier, String password) {
+  public record LoginRequest(@NotEmpty String identifier, @NotEmpty String password) {
 
   }
 
