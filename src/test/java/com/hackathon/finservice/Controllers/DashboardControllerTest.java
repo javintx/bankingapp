@@ -1,6 +1,7 @@
 package com.hackathon.finservice.Controllers;
 
 import static java.util.Collections.emptyList;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -8,8 +9,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.hackathon.finservice.Entities.Account;
 import com.hackathon.finservice.Entities.AccountType;
 import com.hackathon.finservice.Entities.User;
+import com.hackathon.finservice.Services.UserService;
 import com.hackathon.finservice.Util.JwtUtil;
 import java.util.List;
+import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
@@ -26,17 +29,28 @@ class DashboardControllerTest {
   @MockBean
   private JwtUtil jwtUtil;
 
+  @MockBean
+  private UserService userService;
+
   @Test
   void getUserInfo_validToken_returnsUserInfo() throws Exception {
-    var token = "validToken";
-    var user = new User("Nuwe Test", "nuwe@nuwe.com", "",
-        "$2a$10$VNEntB38mHY.dJ9iDkgrjud2EZ/pWCC9IisqyKqL3cLjEM0L0zSZS", emptyList());
-    var account = new Account("e62fa2", 0.0d, AccountType.MAIN, 0);
-    user = new User(user.name(), user.email(), user.password(), user.hashedPassword(), List.of(account));
-//    when(jwtUtil.getValidUserFromToken("Bearer " + token)).thenReturn(Optional.of(user));
+    var user = new User(
+        "Nuwe Test",
+        "nuwe@nuwe.com",
+        "",
+        "$2a$10$VNEntB38mHY.dJ9iDkgrjud2EZ/pWCC9IisqyKqL3cLjEM0L0zSZS",
+        List.of(
+            new Account(
+                "e62fa2",
+                0.0d,
+                AccountType.MAIN,
+                0)
+        ));
+    when(userService.findByEmail("nuwe@nuwe.com")).thenReturn(Optional.of(user));
 
     mockMvc.perform(get("/api/dashboard/user")
-            .header("Authorization", "Bearer " + token))
+            .principal(() -> "nuwe@nuwe.com")
+            .header("Authorization", "Bearer validToken"))
         .andExpect(status().isOk())
         .andExpect(content().json(
             "{\"name\":\"Nuwe Test\",\"email\":\"nuwe@nuwe.com\",\"accountNumber\":\"e62fa2\",\"accountType\":\"Main\",\"hashedPassword\":\"$2a$10$VNEntB38mHY.dJ9iDkgrjud2EZ/pWCC9IisqyKqL3cLjEM0L0zSZS\"}"));
@@ -44,11 +58,9 @@ class DashboardControllerTest {
 
   @Test
   void getUserInfo_invalidToken_returnsAccessDenied() throws Exception {
-    var token = "invalidToken";
-//    when(jwtUtil.getValidUserFromToken("Bearer " + token)).thenReturn(Optional.empty());
-
     mockMvc.perform(get("/api/dashboard/user")
-            .header("Authorization", "Bearer " + token))
+            .principal(() -> "nuwe@nuwe.com")
+            .header("Authorization", "Bearer invalidToken"))
         .andExpect(status().isUnauthorized())
         .andExpect(content().string("Access Denied"));
   }
