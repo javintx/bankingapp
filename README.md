@@ -1,4 +1,4 @@
-# 🏦 CaixaBank Java Backend Challenge ☕️
+# 🏦 Bank Java Backend Challenge ☕️
 
 Category   ➡️   Software
 
@@ -10,12 +10,12 @@ Difficulty   ➡️   Medium
 
 ## 🌐 Background
 
-As digital finance evolves, CaixaBank is dedicated to pushing the boundaries of secure and innovative banking solutions. In this challenge, you will step into the role of a developer tasked with building essential features for a financial services application, focusing on the practical implementation of robust account management, transaction security, and operational efficiency. This project simulates real-world scenarios and requirements, reflecting CaixaBank’s commitment to delivering reliable and user-friendly solutions in an increasingly digital-first world.
+As digital finance evolves, Bank is dedicated to pushing the boundaries of secure and innovative banking solutions. In this challenge, you will step into the role of a developer tasked with building essential features for a financial services application, focusing on the practical implementation of robust account management, transaction security, and operational efficiency. This project simulates real-world scenarios and requirements, reflecting Bank’s commitment to delivering reliable and user-friendly solutions in an increasingly digital-first world.
 
 ## 📂 Repository Structure
 
 ```bash
-caixabank-backend-java-bankingapp/
+Bank-backend-java-bankingapp/
 ├── docker-compose.yml
 ├── Dockerfile
 ├── mvnw
